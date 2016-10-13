@@ -14,9 +14,7 @@
       "options": {
         "paths": {
           "/{args*}": {
-            "content": {
-              "module": "./server/views/index-view"
-            }
+            "content": "./server/views/index-view"
           }
         }
       }
