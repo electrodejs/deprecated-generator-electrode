@@ -14,7 +14,7 @@
       "options": {
         "pageTitle": "<%= projectName %>",
         "paths": {
-          "/{args*}": {
+          "*": {
             "content": {
               "module": "./server/views/index-view"
             }

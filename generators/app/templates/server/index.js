@@ -33,4 +33,4 @@ supports.cssModuleHook({
   generateScopedName: "[name]__[local]___[hash:base64:5]"
 });
 
-require("electrode-server")(config, [staticPathsDecor()]);
+require("exp-server")(config);

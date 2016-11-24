@@ -115,6 +115,16 @@ module.exports = generators.Base.extend({
           when: !this.props.homepage
         },
         {
+          type: "list",
+          name: 'serverType',
+          message: 'Which framework for the server?',
+          when: !this.props.framework,
+          choices: ['HapiJS', "ExpressJS"],
+          filter: function(ans) {
+            return ans.toLowerCase();
+          }
+        },
+        {
           type: "input",
           name: 'authorName',
           message: 'Author\'s Name',
