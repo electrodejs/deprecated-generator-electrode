@@ -15,8 +15,8 @@ module.exports = generators.Base.extend({
 
   writing: function () {
     this.fs.copyTpl(
-      this.templatePath('default.json'),
-      this.destinationPath('config/default.json'),
+      this.templatePath('default.js'),
+      this.destinationPath('config/default.js'),
       {
         projectName: this.options.name
       }
