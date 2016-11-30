@@ -172,6 +172,8 @@ module.exports = generators.Base.extend({
           var newRoot = this.destinationPath() + '/' + _.kebabCase(_.deburr(this.props.name));
           this.destinationRoot(newRoot);
         }
+        // saving to storage after the correct destination root is set
+        this.config.set('serverType', this.props.serverType);
       });
     },
 

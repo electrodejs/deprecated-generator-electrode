@@ -24,7 +24,7 @@ module.exports = {
       "options": {
         "pageTitle": "<%= projectName %>",
         "paths": {
-          "*": {
+          "<%= routeValue %>": {
             "content": {
               "module": "./server/views/index-view"
             }

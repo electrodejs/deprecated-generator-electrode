@@ -14,11 +14,13 @@ module.exports = generators.Base.extend({
   },
 
   writing: function () {
+    let routeMatch = (this.config.get('serverType') === 'hapijs') ? "/{args*}" : "*";
     this.fs.copyTpl(
       this.templatePath('default.js'),
       this.destinationPath('config/default.js'),
       {
-        projectName: this.options.name
+        projectName: this.options.name,
+        routeValue: routeMatch
       }
     );
   }
