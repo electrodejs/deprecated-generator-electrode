@@ -32,5 +32,3 @@ supports.babelRegister({
 supports.cssModuleHook({
   generateScopedName: "[name]__[local]___[hash:base64:5]"
 });
-
-require("exp-server")(config);

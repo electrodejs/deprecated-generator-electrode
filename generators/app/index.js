@@ -10,6 +10,7 @@ var _ = require('lodash');
 var extend = _.merge;
 var parseAuthor = require('parse-author');
 var githubUsername = require('github-username');
+var htmlWiring = require("html-wiring");
 
 module.exports = generators.Base.extend({
   constructor: function () {
@@ -115,11 +116,12 @@ module.exports = generators.Base.extend({
           when: !this.props.homepage
         },
         {
-          type: "list",
+          type: 'list',
           name: 'serverType',
           message: 'Which framework for the server?',
           when: !this.props.framework,
           choices: ['HapiJS', "ExpressJS"],
+          default: 'HapiJS',
           filter: function(ans) {
             return ans.toLowerCase();
           }
@@ -166,7 +168,6 @@ module.exports = generators.Base.extend({
 
       return this.prompt(prompts).then((props) => {
         this.props = extend(this.props, props);
-
         if (this.props.createDirectory) {
           var newRoot = this.destinationPath() + '/' + _.kebabCase(_.deburr(this.props.name));
           this.destinationRoot(newRoot);
@@ -241,12 +242,28 @@ module.exports = generators.Base.extend({
       this.destinationPath('.babelrc')
     );
 
-    ['gulpfile.js', 'client', 'config', 'server', 'test'].forEach((f) => {
+    ['gulpfile.js', 'client','config', 'test'].forEach((f) => {
       this.fs.copy(
         this.templatePath(f),
         this.destinationPath(f)
       );
     });
+      //special handling for the server file
+      this.fs.copy(
+        this.templatePath('server/index.js'),
+        this.destinationPath('server/index.js'),
+        {
+          process: function(contents) {
+            let updatedContents = '';
+            let expressServer = new Buffer('require("exp-server")(config);');
+            let hapiServer = new Buffer('require("electrode-server")(config, [staticPathsDecor()]);');
+            (this.props.serverType.toLowerCase() === 'expressjs') ?
+              updatedContents = Buffer.concat([contents,expressServer]) :
+              updatedContents = Buffer.concat([contents,hapiServer]);
+            return updatedContents;
+          }.bind(this)
+        }
+      );
   },
 
   default: function () {
