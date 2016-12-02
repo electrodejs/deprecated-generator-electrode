@@ -34,9 +34,6 @@ function loadAssetsFromStats(statsFilePath) {
 }
 
 function makeRouteHandler(options, userContent) {
-  console.log("makeRoute Handler");
-  //console.log("makeRouteHandler options: ", options);
-  //console.log("userContent: ", userContent);
   const CONTENT_MARKER = "{{SSR_CONTENT}}";
   const BUNDLE_MARKER = "{{WEBAPP_BUNDLES}}";
   const TITLE_MARKER = "{{PAGE_TITLE}}";
@@ -51,7 +48,6 @@ function makeRouteHandler(options, userContent) {
 
   /* Create a route handler */
   return (request, reply) => {
-    console.log("came into route handler");
     const mode = request.query.__mode || "";
     const renderJs = RENDER_JS && mode !== "nojs";
     const renderSs = RENDER_SS && mode !== "noss";
@@ -68,7 +64,6 @@ function makeRouteHandler(options, userContent) {
     };
 
     const callUserContent = (content) => {
-      console.log("Call USer Content: ", content);
       const x = content(request);
       return !x.catch ? x : x.catch((err) => {
         return {
@@ -87,7 +82,6 @@ function makeRouteHandler(options, userContent) {
     };
 
     const renderPage = (content) => {
-      console.log("Render page: ", Object.keys(content));
       return html.replace(/{{[A-Z_]*}}/g, (m) => {
         switch (m) {
         case CONTENT_MARKER:
@@ -105,7 +99,6 @@ function makeRouteHandler(options, userContent) {
     };
 
     const renderSSRContent = (content) => {
-      console.log("Render SSR_CONTENT ", content);
       const p = _.isFunction(content) ?
         callUserContent(content) :
         Promise.resolve(_.isObject(content) ? content : {html: content});
@@ -136,7 +129,6 @@ function makeRouteHandler(options, userContent) {
 }
 
 const registerRoutes = (app, options, next) => {
-  console.log("register Routes APP", app);
   const pluginOptionsDefaults = {
     pageTitle: "Untitled Electrode Web Application",
     webpackDev: process.env.WEBPACK_DEV === "true",
@@ -171,8 +163,6 @@ const registerRoutes = (app, options, next) => {
       };
 
       _.each(options.paths, (v, path) => {
-        console.log("Options.Path: ", path);
-        console.log("V.CONTENT: ", v.content);
         assert(v.content, `You must define content for the webapp plugin path ${path}`);
         app.all( path, makeRouteHandler(pluginOptions, resolveContent(v.content)));
       });
