@@ -251,20 +251,10 @@ module.exports = generators.Base.extend({
       );
     });
       //special handling for the server file
-      this.fs.copy(
+      this.fs.copyTpl(
         this.templatePath('server/index.js'),
         this.destinationPath('server/index.js'),
-        {
-          process: function(contents) {
-            let updatedContents = '';
-            let expressServer = new Buffer('require("exp-server")(config);');
-            let hapiServer = new Buffer('require("electrode-server")(config, [staticPathsDecor()]);');
-            (this.props.serverType.toLowerCase() === 'expressjs') ?
-              updatedContents = Buffer.concat([contents,expressServer]) :
-              updatedContents = Buffer.concat([contents,hapiServer]);
-            return updatedContents;
-          }.bind(this)
-        }
+        {hapiJs: this.config.get('serverType') === 'hapijs'}
       );
   },
 

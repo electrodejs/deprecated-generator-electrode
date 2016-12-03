@@ -32,3 +32,4 @@ supports.babelRegister({
 supports.cssModuleHook({
   generateScopedName: "[name]__[local]___[hash:base64:5]"
 });
+require<% if (hapiJs) { %>("electrode-server")(config, [staticPathsDecor()])<% } else { %>("exp-server")(config)<% } %>;
