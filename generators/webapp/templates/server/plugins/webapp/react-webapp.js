@@ -6,8 +6,6 @@ const fs = require("fs");
 const Path = require("path");
 const assert = require("assert");
 
-const HTTP_ERROR_500 = 500;
-const HTTP_REDIRECT = 302;
 
 /**
  * Load stats.json which is created during build.
@@ -47,8 +45,8 @@ function makeRouteHandler(options, userContent) {
   const devCSSBundle = options.__internals.devCSSBundle;
 
   /* Create a route handler */
-  return (request, reply) => {
-    const mode = request.query.__mode || "";
+  return (options) => {
+    const mode = options.mode;
     const renderJs = RENDER_JS && mode !== "nojs";
     const renderSs = RENDER_SS && mode !== "noss";
 
@@ -64,8 +62,8 @@ function makeRouteHandler(options, userContent) {
     };
 
     const callUserContent = (content) => {
-      const x = content(request);
-      return !x.catch ? x : x.catch((err) => {
+      const x = content(options.request);
+      return !x.catch ? Promise.resolve(x) : x.catch((err) => {
         return Promise.reject({
           status: err.status || HTTP_ERROR_500,
           html: err.message || err.toString()
@@ -109,30 +107,11 @@ function makeRouteHandler(options, userContent) {
       return p.then((c) => renderPage(c));
     };
 
-    const handleStatus = (data) => {
-      const status = data.status;
-      if (status === HTTP_REDIRECT) {
-        reply.redirect(data.path);
-      } else {
-        reply({message: "error"}).code(status);
-      }
-    };
-
-    const doRender = () => {
-      return renderSs ? renderSSRContent(userContent) : renderPage("");
-    };
-
-    Promise.try(doRender)
-      .then((data) => {
-        return data.status ? handleStatus(data) : reply(data);
-      })
-      .catch((err) => {
-        reply(err.html).code(err.status || HTTP_ERROR_500);
-      });
+    return renderSSRContent(renderSs ? userContent : "");
   };
 }
 
-const registerRoutes = (server, options, next) => {
+const setupOptions = (options) => {
 
   const pluginOptionsDefaults = {
     pageTitle: "Untitled Electrode Web Application",
@@ -147,15 +126,6 @@ const registerRoutes = (server, options, next) => {
     stats: "dist/server/stats.json"
   };
 
-  const resolveContent = (content) => {
-    if (!_.isString(content) && !_.isFunction(content) && content.module) {
-      const module = content.module.startsWith(".") ? Path.join(process.cwd(), content.module) : content.module; // eslint-disable-line
-      return require(module); // eslint-disable-line
-    }
-
-    return content;
-  };
-
   const pluginOptions = _.defaultsDeep({}, options, pluginOptionsDefaults);
 
   return Promise.try(() => loadAssetsFromStats(pluginOptions.stats))
@@ -166,26 +136,23 @@ const registerRoutes = (server, options, next) => {
         devJSBundle: `http://${devServer.host}:${devServer.port}/js/bundle.dev.js`,
         devCSSBundle: `http://${devServer.host}:${devServer.port}/js/style.css`
       };
-
-      _.each(options.paths, (v, path) => {
-        assert(v.content, `You must define content for the webapp plugin path ${path}`);
-        server.route({
-          method: "GET",
-          path,
-          config: v.config || {},
-          handler: makeRouteHandler(pluginOptions, resolveContent(v.content))
-        });
-      });
-      next();
-    })
-    .catch(next);
+      return pluginOptions;
+    });
 };
 
-registerRoutes.attributes = {
-  pkg: {
-    name: "webapp",
-    version: "1.0.0"
+
+const resolveContent = (content) => {
+  if (!_.isString(content) && !_.isFunction(content) && content.module) {
+    const module = content.module.startsWith(".") ? Path.join(process.cwd(), content.module) : content.module; // eslint-disable-line
+    return require(module); // eslint-disable-line
   }
+
+  return content;
 };
 
-module.exports = registerRoutes;
+
+module.exports = {
+  setupOptions,
+  makeRouteHandler,
+  resolveContent
+};

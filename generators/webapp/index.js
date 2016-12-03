@@ -15,19 +15,11 @@ module.exports = generators.Base.extend({
 
   writing: function () {
 
-    let serverType = this.config.get('serverType');
-    let newIndexFile = (serverType === 'hapijs') ? 'indexHapi.js' : 'indexExpress.js';
-    let deleteIndexFile = (serverType === 'hapijs') ? 'indexExpress.js' : 'indexHapi.js';
-    let indexFilePath = 'server/plugins/webapp/index.js';
-    let fileToMove = ('server/plugins/webapp/').concat(newIndexFile);
-    let fileToDelete = ('server/plugins/webapp/').concat(deleteIndexFile);
-
-    this.fs.copy(
+    this.fs.copyTpl(
       this.templatePath('server'),
-      this.destinationPath(this.options.generateInto, 'server')
+      this.destinationPath(this.options.generateInto, 'server'),
+      {hapiJs: this.config.get('serverType') === 'hapijs'}
     );
 
-    this.fs.move(fileToMove, indexFilePath);
-    this.fs.delete(fileToDelete);
   }
 });
