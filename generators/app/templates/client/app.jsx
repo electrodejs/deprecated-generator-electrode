@@ -27,4 +27,3 @@ window.webappStart = () => {
     document.querySelector(".js-content")
   );
 };
-
