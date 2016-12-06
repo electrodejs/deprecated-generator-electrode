@@ -150,6 +150,7 @@ module.exports = generators.Base.extend({
           type: "confirm",
           name: "pwa",
           message: "Would you like to make a Progressive Web App?",
+          when: !this.props.pwa,
           default: true
         },
         {
@@ -247,18 +248,20 @@ module.exports = generators.Base.extend({
     this.fs.copyTpl(
       this.templatePath('client'),
       this.destinationPath('client'),
-      { pwa: this.props.pwa }
+      { pwa: this.props.pwa },
+      {}, // template options
+      { // copy options
+        globOptions: {
+          // Images are damaged by the template compiler
+          ignore: ['**/client/images/**', !this.props.pwa && '**/client/sw-register.js' || '']
+        }
+      }
     );
 
-    // Images are damaged by the template compiler
     this.fs.copy(
       this.templatePath('client/images'),
       this.destinationPath('client/images')
     );
-
-    if (!this.props.pwa) {
-      this.fs.delete('client/sw-register.js');
-    }
   },
 
   default: function () {

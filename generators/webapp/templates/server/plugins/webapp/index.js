@@ -70,10 +70,6 @@ function makeRouteHandler(options, userContent) {
   /* Create a route handler */
   /*eslint max-statements: 0*/
   return (request, reply) => {
-    if (global.navigator) {
-      global.navigator.userAgent = request.headers["user-agent"] || "all";
-    }
-
     const mode = request.query.__mode || "";
     const renderJs = RENDER_JS && mode !== "nojs";
     const renderSs = RENDER_SS && mode !== "noss";
@@ -96,10 +92,10 @@ function makeRouteHandler(options, userContent) {
     const callUserContent = (content) => {
       const x = content(request);
       return !x.catch ? x : x.catch((err) => {
-        return {
+        return Promise.reject({
           status: err.status || HTTP_ERROR_500,
-          html: err.toString()
-        };
+          html: err.message || err.toString()
+        });
       });
     };
 
