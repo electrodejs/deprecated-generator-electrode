@@ -23,24 +23,24 @@ const setRouteHandler = function() {
 	console.log(' registerRoutes path: ', path.join(process.cwd(),defaultConfig.$("plugins.webapp.module")));
 	const registerRoutes = require(path.join(process.cwd(),defaultConfig.$("plugins.webapp.module")));
 	return registerRoutes(app, defaultConfig.$("plugins.webapp.options"),
-			function (err) {
-      	if (err) {
-        	console.log(err);
-        }
-      }
-		);
+	function (err) {
+		if (err) {
+			console.log(err);
+		}
+	}
+);
 }
 
 const startServer = function() {
 	app.listen(defaultConfig.$("connections.default.port"), function() {
-   	console.log("App listening on port: ", defaultConfig.$("connections.default.port"));
- 	});
+		console.log("App listening on port: ", defaultConfig.$("connections.default.port"));
+	});
 }
 
 module.exports = function electrodeServer(userConfig) {
 	const promise = Promise.resolve({})
-		.then(loadConfigs)
-		.then(setStaticPaths)
-    .then(setRouteHandler)
-    .then(startServer);
+	.then(loadConfigs)
+	.then(setStaticPaths)
+	.then(setRouteHandler)
+	.then(startServer);
 }

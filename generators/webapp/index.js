@@ -18,12 +18,11 @@ module.exports = generators.Base.extend({
     this.fs.copyTpl(
       this.templatePath('server'),
       this.destinationPath(this.options.generateInto, 'server'),
-      {hapiJs: serverType === 'hapijs'}
+      {isHapi: serverType === 'hapijs'},
+      {},
+      {
+        globOptions: { ignore: [ (serverType === 'hapijs') ? '**/server/plugins/webapp/express-middleware.js' : '**/server/plugins/webapp/hapi-plugin.js' ] }
+      }
     );
-    let deleteIndexFile = (serverType === 'hapijs') ?
-                          '/server/plugins/webapp/express-middleware.js'
-                          : '/server/plugins/webapp/hapi-plugin.js';
-    this.fs.delete(this.destinationPath(this.options.generateInto).concat(deleteIndexFile));
-
   }
 });

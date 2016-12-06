@@ -10,7 +10,6 @@ var _ = require('lodash');
 var extend = _.merge;
 var parseAuthor = require('parse-author');
 var githubUsername = require('github-username');
-var htmlWiring = require("html-wiring");
 
 module.exports = generators.Base.extend({
   constructor: function () {
@@ -252,16 +251,14 @@ module.exports = generators.Base.extend({
     });
       //special handling for the server file
       this.fs.copyTpl(
-        this.templatePath('server/index.js'),
-        this.destinationPath('server/index.js'),
-        {hapiJs: this.config.get('serverType') === 'hapijs'}
+        this.templatePath('server'),
+        this.destinationPath('server'),
+        {isHapi: this.config.get('serverType') === 'hapijs'},
+        {},
+        {
+          globOptions: { ignore: [ (this.config.get('serverType') === 'hapijs') ? '**/server/express-server.js' : '' ] }
+        }
       );
-      if (this.config.get('serverType') !== 'hapijs') {
-        this.fs.copy(
-          this.templatePath('server/express-server.js'),
-          this.destinationPath('server/express-server.js')
-        );
-      }
   },
 
   default: function () {

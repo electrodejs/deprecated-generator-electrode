@@ -1,1 +1,1 @@
-module.exports = require(<% if (hapiJs) { %>"./hapi-plugin"<% } else { %>"./express-middleware"<% } %>);
+module.exports = require(<% if (isHapi) { %>"./hapi-plugin"<% } else { %>"./express-middleware"<% } %>);
