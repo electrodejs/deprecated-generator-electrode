@@ -14,14 +14,14 @@ module.exports = generators.Base.extend({
   },
 
   writing: function () {
-    let serverType = this.config.get('serverType');
+    const isHapi = this.config.get('serverType') === 'hapijs';
     this.fs.copyTpl(
       this.templatePath('server'),
       this.destinationPath(this.options.generateInto, 'server'),
-      {isHapi: serverType === 'hapijs'},
+      {isHapi},
       {},
       {
-        globOptions: { ignore: [ (serverType === 'hapijs') ? '**/server/plugins/webapp/express-middleware.js' : '**/server/plugins/webapp/hapi-plugin.js' ] }
+        globOptions: { ignore: [ isHapi ? '**/server/plugins/webapp/express-middleware.js' : '**/server/plugins/webapp/hapi-plugin.js' ] }
       }
     );
   }

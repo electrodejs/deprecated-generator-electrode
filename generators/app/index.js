@@ -250,13 +250,14 @@ module.exports = generators.Base.extend({
       );
     });
       //special handling for the server file
+      const isHapi = this.config.get('serverType') === 'hapijs';
       this.fs.copyTpl(
         this.templatePath('server'),
         this.destinationPath('server'),
-        {isHapi: this.config.get('serverType') === 'hapijs'},
+        {isHapi},
         {},
         {
-          globOptions: { ignore: [ (this.config.get('serverType') === 'hapijs') ? '**/server/express-server.js' : '' ] }
+          globOptions: { ignore: [ isHapi ? '**/server/express-server.js' : '' ] }
         }
       );
   },
