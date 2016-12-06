@@ -5,8 +5,7 @@ module.exports = {
       handler: "fastest",
       urlPattern: "\/$"
     }],
-    staticFileGlobs: ['dist/**/*'],
-    importScripts: ['./sw-events.js']
+    staticFileGlobs: ['dist/**/*']
   },
   manifest: {
     background: "#FFFFFF",

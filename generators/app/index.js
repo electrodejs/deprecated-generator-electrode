@@ -250,6 +250,12 @@ module.exports = generators.Base.extend({
       { pwa: this.props.pwa }
     );
 
+    // Images are damaged by the template compiler
+    this.fs.copy(
+      this.templatePath('client/images'),
+      this.destinationPath('client/images')
+    );
+
     if (!this.props.pwa) {
       this.fs.delete('client/sw-register.js');
     }
