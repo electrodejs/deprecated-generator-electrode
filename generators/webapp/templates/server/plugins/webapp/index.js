@@ -187,7 +187,15 @@ const registerRoutes = (server, options, next) => {
     stats: "dist/server/stats.json",
     iconStats: "dist/server/iconstats.json"
   };
-
+<% if (pwa) { %>
+  server.route({
+    method: "GET",
+    path: "/sw.js",
+    handler: {
+      file: "dist/sw.js"
+    }
+  });
+<% } %>
   const resolveContent = (content) => {
     if (!_.isString(content) && !_.isFunction(content) && content.module) {
       const module = content.module.startsWith(".") ? Path.join(process.cwd(), content.module) : content.module; // eslint-disable-line
