@@ -256,6 +256,12 @@ module.exports = generators.Base.extend({
         this.destinationPath('server/index.js'),
         {hapiJs: this.config.get('serverType') === 'hapijs'}
       );
+      if (this.config.get('serverType') !== 'hapijs') {
+        this.fs.copy(
+          this.templatePath('server/express-server.js'),
+          this.destinationPath('server/express-server.js')
+        );
+      }
   },
 
   default: function () {
