@@ -19,27 +19,34 @@ const setStaticPaths = function() {
   app.use(express.static(path.join(__dirname, defaultConfig.$("plugins.electrodeStaticPaths.options.pathPrefix"))));
 }
 
-const setRouteHandler = function() {
-  const registerRoutes = require(path.join(process.cwd(),defaultConfig.$("plugins.webapp.module")));
+const setRouteHandler = () => new Promise((resolve, reject) => {
+  const registerRoutes = require(path.resolve(defaultConfig.$("plugins.webapp.module")));
   return registerRoutes(app, defaultConfig.$("plugins.webapp.options"),
     function (err) {
       if (err) {
-        console.log(err);
+        console.error(err);
+        reject(err);
+      } else {
+        resolve();
       }
     }
   );
-}
+});
 
-const startServer = function() {
-  app.listen(defaultConfig.$("connections.default.port"), function() {
-    console.log("App listening on port: ", defaultConfig.$("connections.default.port"));
+const startServer = () => new Promise((resolve, reject) => {
+  app.listen(defaultConfig.$("connections.default.port"), function(err) {
+    return err ? reject(err) :
+      console.log('App listening on port:', defaultConfig.$("connections.default.port"));
+      resolve();
   });
-}
+});
 
-module.exports = function electrodeServer(userConfig) {
+module.exports = function electrodeServer(userConfig, callback) {
   const promise = Promise.resolve({})
   .then(loadConfigs)
   .then(setStaticPaths)
   .then(setRouteHandler)
   .then(startServer);
+
+  return callback ? promise.nodeify(callback) : promise;
 }
