@@ -159,6 +159,13 @@ module.exports = generators.Base.extend({
         },
         {
           type: "confirm",
+          name: "pwa",
+          message: "Would you like to make a Progressive Web App?",
+          when: !this.props.pwa,
+          default: true
+        },
+        {
+          type: "confirm",
           name: "createDirectory",
           message: "Would you like to create a new directory for your project?",
           default: true
@@ -243,7 +250,7 @@ module.exports = generators.Base.extend({
       this.destinationPath('.babelrc')
     );
 
-    ['gulpfile.js', 'client','config', 'test'].forEach((f) => {
+    ['gulpfile.js','config', 'test'].forEach((f) => {
       this.fs.copy(
         this.templatePath(f),
         this.destinationPath(f)
@@ -260,6 +267,24 @@ module.exports = generators.Base.extend({
           globOptions: { ignore: [ isHapi ? '**/server/express-server.js' : '' ] }
         }
       );
+
+    this.fs.copyTpl(
+      this.templatePath('client'),
+      this.destinationPath('client'),
+      { pwa: this.props.pwa },
+      {}, // template options
+      { // copy options
+        globOptions: {
+          // Images are damaged by the template compiler
+          ignore: ['**/client/images/**', !this.props.pwa && '**/client/sw-register.js' || '']
+        }
+      }
+    );
+
+    this.fs.copy(
+      this.templatePath('client/images'),
+      this.destinationPath('client/images')
+    );
   },
 
   default: function () {
@@ -309,10 +334,11 @@ module.exports = generators.Base.extend({
       });
     }
 
-    if (!this.fs.exists(this.destinationPath('config/default.json'))) {
+    if (!this.fs.exists(this.destinationPath('config/default.js'))) {
       this.composeWith('electrode:config', {
         options: {
-          name: this.props.name
+          name: this.props.name,
+          pwa: this.props.pwa
         }
       }, {
         local: require.resolve('../config')
@@ -320,7 +346,11 @@ module.exports = generators.Base.extend({
     }
 
     if (!this.fs.exists(this.destinationPath('server/plugins/webapp'))) {
-      this.composeWith('electrode:webapp', {}, {
+      this.composeWith('electrode:webapp', {
+        options: {
+          pwa: this.props.pwa
+        }
+      }, {
         local: require.resolve('../webapp')
       });
     }

@@ -11,6 +11,12 @@ module.exports = generators.Base.extend({
       required: true,
       desc: 'Project name'
     });
+
+    this.option('pwa', {
+      type: String,
+      required: true,
+      desc: 'Progressive Web App'
+    });
   },
 
   writing: function () {
@@ -23,5 +29,13 @@ module.exports = generators.Base.extend({
         routeValue: routeMatch
       }
     );
+
+    if (this.options.pwa) {
+      this.fs.copyTpl(
+        this.templatePath('sw-config.js'),
+        this.destinationPath('config/sw-config.js'),
+        { projectName: this.options.name }
+      );
+    }
   }
 });

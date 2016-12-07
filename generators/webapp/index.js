@@ -11,6 +11,12 @@ module.exports = generators.Base.extend({
       defaults: '',
       desc: 'Relocate the location of the generated files.'
     });
+
+    this.option('pwa', {
+      type: String,
+      required: true,
+      desc: 'Progressive Web App'
+    });
   },
 
   writing: function () {
@@ -18,7 +24,10 @@ module.exports = generators.Base.extend({
     this.fs.copyTpl(
       this.templatePath('server'),
       this.destinationPath(this.options.generateInto, 'server'),
-      {isHapi},
+      {
+        isHapi,
+        pwa: this.options.pwa
+      },
       {},
       {
         globOptions: { ignore: [ isHapi ? '**/server/plugins/webapp/express-middleware.js' : '**/server/plugins/webapp/hapi-plugin.js' ] }
