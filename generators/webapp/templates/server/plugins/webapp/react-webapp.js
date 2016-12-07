@@ -19,11 +19,14 @@ function loadAssetsFromStats(statsFilePath) {
     .then(require)
     .then((stats) => {
       const assets = {};
-      _.each(stats.assetsByChunkName.main, (v) => {
-        if (v.endsWith(".js")) {
-          assets.js = v;
-        } else if (v.endsWith(".css")) {
-          assets.css = v;
+      _.each(stats.assets, (asset) => {
+        const name = asset.name;
+        if (name.startsWith("bundle")) {
+          assets.js = name;
+        } else if (name.endsWith(".css")) {
+          assets.css = name;
+        } else if (name.endsWith("manifest.json")) {
+          assets.manifest = name;
         }
       });
       return assets;
@@ -31,11 +34,28 @@ function loadAssetsFromStats(statsFilePath) {
     .catch(() => ({}));
 }
 
+function getIconStats(iconStatsPath) {
+  let iconStats;
+  try {
+    iconStats = fs.readFileSync(Path.resolve(iconStatsPath)).toString();
+    iconStats = JSON.parse(iconStats);
+  } catch (err) {
+    return '';
+  }
+  if (iconStats && iconStats.html) {
+    return iconStats.html.join("");
+  }
+  return iconStats;
+}
+
+/* eslint max-statements: [2, 16] */
 function makeRouteHandler(options, userContent) {
   const CONTENT_MARKER = "{{SSR_CONTENT}}";
-  const BUNDLE_MARKER = "{{WEBAPP_BUNDLES}}";
+  const HEADER_BUNDLE_MARKER = "{{WEBAPP_HEADER_BUNDLES}}";
+  const BODY_BUNDLE_MARKER = "{{WEBAPP_BODY_BUNDLES}}";
   const TITLE_MARKER = "{{PAGE_TITLE}}";
   const PREFETCH_MARKER = "{{PREFETCH_BUNDLES}}";
+  const META_TAGS_MARKER = "{{META_TAGS}}";
   const WEBPACK_DEV = options.webpackDev;
   const RENDER_JS = options.renderJS;
   const RENDER_SS = options.serverSideRendering;
@@ -43,8 +63,10 @@ function makeRouteHandler(options, userContent) {
   const assets = options.__internals.assets;
   const devJSBundle = options.__internals.devJSBundle;
   const devCSSBundle = options.__internals.devCSSBundle;
+  const iconStats = getIconStats(options.iconStats);
 
   /* Create a route handler */
+  /*eslint max-statements: 0*/
   return (options) => {
     const mode = options.mode;
     const renderJs = RENDER_JS && mode !== "nojs";
@@ -61,6 +83,10 @@ function makeRouteHandler(options, userContent) {
       return WEBPACK_DEV ? devJSBundle : assets.js && `/js/${assets.js}` || "";
     };
 
+    const bundleManifest = () => {
+      return assets.manifest ? `/js/${assets.manifest}` : "";
+    };
+
     const callUserContent = (content) => {
       const x = content(options.request);
       return !x.catch ? Promise.resolve(x) : x.catch((err) => {
@@ -71,12 +97,22 @@ function makeRouteHandler(options, userContent) {
       });
     };
 
-    const makeBundles = () => {
+    const makeHeaderBundles = () => {
+      const manifest = bundleManifest();
+      const manifestLink = manifest
+        ? `<link rel="manifest" href="${manifest}" />`
+        : "";
       const css = bundleCss();
       const cssLink = css ? `<link rel="stylesheet" href="${css}" />` : "";
+      const font = "https://fonts.googleapis.com/icon?family=Material+Icons|Open+Sans";
+      const fontLink = `<link rel="stylesheet" href="${font}" />`;
+      return `${manifestLink}${cssLink}${fontLink}`;
+    };
+
+    const makeBodyBundles = () => {
       const js = bundleJs();
       const jsLink = js ? `<script src="${js}"></script>` : "";
-      return `${cssLink}${jsLink}`;
+      return jsLink;
     };
 
     const addPrefetch = (prefetch) => {
@@ -90,10 +126,14 @@ function makeRouteHandler(options, userContent) {
           return content.html || "";
         case TITLE_MARKER:
           return options.pageTitle;
-        case BUNDLE_MARKER:
-          return makeBundles();
+        case HEADER_BUNDLE_MARKER:
+          return makeHeaderBundles();
+        case BODY_BUNDLE_MARKER:
+          return makeBodyBundles();
         case PREFETCH_MARKER:
-          return addPrefetch(content.prefetch);
+          return `<script>${content.prefetch}</script>`;
+        case META_TAGS_MARKER:
+          return iconStats;
         default:
           return `Unknown marker ${m}`;
         }
@@ -123,7 +163,8 @@ const setupOptions = (options) => {
       port: process.env.WEBPACK_DEV_PORT || "2992"
     },
     paths: {},
-    stats: "dist/server/stats.json"
+    stats: "dist/server/stats.json",
+    iconStats: "dist/server/iconstats.json"
   };
 
   const pluginOptions = _.defaultsDeep({}, options, pluginOptionsDefaults);

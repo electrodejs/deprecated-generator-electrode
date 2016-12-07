@@ -15,6 +15,16 @@ const registerRoutes = (server, options, next) => {
 
         const routeHandler = ReactWebapp.makeRouteHandler(registerOptions, ReactWebapp.resolveContent(v.content));
 
+        <% if (pwa) { %>
+          server.route({
+            method: "GET",
+            path: "/sw.js",
+            handler: {
+              file: "dist/sw.js"
+            }
+          });
+        <% } %>
+
         server.route({
           method: "GET",
           path,
@@ -35,7 +45,7 @@ const registerRoutes = (server, options, next) => {
                 return data.status ? handleStatus(data) : reply(data);
               })
               .catch((err) => {
-                reply(err.html).code(err.status || HTTP_ERROR_500);
+                reply(err.message).code(err.status || HTTP_ERROR_500);
               });
           }
         });
