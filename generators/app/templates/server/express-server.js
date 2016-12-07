@@ -35,9 +35,12 @@ const setRouteHandler = () => new Promise((resolve, reject) => {
 
 const startServer = () => new Promise((resolve, reject) => {
   app.listen(defaultConfig.$("connections.default.port"), function(err) {
-    return err ? reject(err) :
+    if (err) {
+      reject(err);
+    } else {
       console.log('App listening on port:', defaultConfig.$("connections.default.port"));
       resolve();
+    }
   });
 });
 
