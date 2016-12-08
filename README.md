@@ -1,4 +1,9 @@
 # generator-electrode [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+
+# Deprecated
+
+This repo has been moved to https://github.com/electrode-io/electrode#yeoman-generator
+
 > Generate Electrode ~~Isomorphic~~ Universal React App with NodeJS backend.
 
 ## Installation
